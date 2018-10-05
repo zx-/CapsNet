@@ -1,0 +1,56 @@
+import tensorflow as tf
+import numpy as np
+from layers import helpers
+
+
+def expand(x):
+    return np.tile(x, (3, 1))
+
+
+def expand2(x):
+    return np.tile(np.expand_dims(np.tile(x, (5, 1)), axis=0), (2, 1, 1))
+
+
+class SquashTest(tf.test.TestCase):
+    def setUp(self):
+        self.single = np.array([0.0, 1.0, 0.0])
+        self.single_out = np.array([0.0, 0.5, 0.0])
+        self.single2 = np.array([0.0, 1.0, 15.0])
+        self.single_out2 = np.array([0.0, 0.06622598, 0.99338963])
+
+    def squash(self, x, expected_output):
+        with self.test_session():
+            s = helpers.squash(x)
+            self.assertAllCloseAccordingToType(s.eval(), expected_output)
+
+    def test_vec(self):
+        self.squash(self.single, self.single_out)
+        self.squash(self.single2, self.single_out2)
+
+    def test_mul_vec(self):
+        self.squash(expand(self.single), expand(self.single_out))
+        self.squash(expand(self.single2), expand(self.single_out2))
+
+    def test_mul_vec2(self):
+        self.squash(expand2(self.single), expand2(self.single_out))
+        self.squash(expand2(self.single2), expand2(self.single_out2))
+
+
+class Conv2CapsTest(tf.test.TestCase):
+    def setUp(self):
+        # create (3,3,4) mat simulating conv volume
+        self.x = np.arange(3 * 3 * 4).reshape((3, 3, 4))
+        # create batch dim
+        self.x = np.tile(self.x, (3, 1, 1, 1))
+
+        self.x_out = np.arange(3 * 3 * 4).reshape((1, -1, 2))
+        self.x_out = np.tile(self.x_out, (3, 1, 1))
+
+    def test_conv2caps(self):
+        with self.test_session():
+            s = helpers.conv2caps(self.x, 2)
+            self.assertAllCloseAccordingToType(s.eval(), self.x_out)
+
+
+if __name__ == '__main__':
+    tf.test.main()
