@@ -21,7 +21,6 @@ class PrimaryCaps(keras.layers.Layer):
         }
 
     def build(self, input_shape):
-        self.input_shape = input_shape
         filters = self.params['channels'] * self.params['conv_units']
 
         # outputs (samples, new_rows, new_cols, filters)
