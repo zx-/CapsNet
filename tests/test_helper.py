@@ -32,7 +32,7 @@ class SquashTest(tf.test.TestCase):
         self.squash(expand(self.single), expand(self.single_out))
         self.squash(expand(self.single2), expand(self.single_out2))
 
-    def test_mul_vec2(self):
+    def test_mul_vec_2(self):
         self.squash(expand2(self.single), expand2(self.single_out))
         self.squash(expand2(self.single2), expand2(self.single_out2))
 
@@ -47,7 +47,7 @@ class Conv2CapsTest(tf.test.TestCase):
         self.x_out = np.arange(3 * 3 * 4).reshape((1, -1, 2))
         self.x_out = np.tile(self.x_out, (3, 1, 1))
 
-    def test_conv2caps(self):
+    def test_conv_2_caps(self):
         with self.test_session():
             s = helpers.conv2caps(self.x, 2)
             self.assertAllCloseAccordingToType(s.eval(), self.x_out)
@@ -70,3 +70,4 @@ class ConvDimSame(unittest.TestCase):
 
 if __name__ == '__main__':
     tf.test.main()
+

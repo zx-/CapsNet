@@ -28,7 +28,8 @@ class PrimaryCaps(keras.layers.Layer):
             filters,
             self.params['kernel_size'],
             strides=self.params['strides'],
-            padding=self.params['padding']
+            padding=self.params['padding'],
+            name="conv2d"
         )
 
         super(PrimaryCaps, self).build(input_shape)
