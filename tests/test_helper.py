@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import unittest
 from layers import helpers
 
 
@@ -50,6 +51,21 @@ class Conv2CapsTest(tf.test.TestCase):
         with self.test_session():
             s = helpers.conv2caps(self.x, 2)
             self.assertAllCloseAccordingToType(s.eval(), self.x_out)
+
+
+class ConvDimValid(unittest.TestCase):
+
+    def test_kernel(self):
+        self.assertEqual(helpers.conv_dim_valid(28, 9, 1), 20)
+
+    def test_stride(self):
+        self.assertEqual(helpers.conv_dim_valid(20, 9, 2), 6)
+
+
+class ConvDimSame(unittest.TestCase):
+
+    def test_stride(self):
+        self.assertEqual(helpers.conv_dim_same(28, 2), 14)
 
 
 if __name__ == '__main__':

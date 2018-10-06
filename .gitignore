@@ -1,1 +1,3 @@
 .idea
+venv
+layers/__pycache__/
