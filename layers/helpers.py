@@ -30,8 +30,8 @@ def squash(x, axis=-1):
 
 def conv2caps(x, caps_dim):
     """
-    Takes tensor of shape (batch, h, w, channels)
-    and returns tensor of shape (batch, None, caps_dim).
+    Takes tensor of shape `(batch, h, w, channels)`
+    and returns tensor of shape `(batch, None, caps_dim)`.
 
     channels should be divisible by caps_dim.
 
@@ -44,6 +44,7 @@ def conv2caps(x, caps_dim):
 
     Returns
     -------
+    tf.Tensor
 
     """
     batch_size = tf.shape(x)[0]
@@ -52,23 +53,23 @@ def conv2caps(x, caps_dim):
 
 def conv_dim_valid(n, kernel, stride):
     """
-        Computes dimension after convolution with padding `valid`.
+    Computes dimension after convolution with padding `valid`.
 
-        Parameters
-        ----------
-        n : int
-            Input dimension when using convolution.
-        kernel: int
-            Kernel size in given dimension.
-        stride : int
-            Applied stride in given dimension.
+    Parameters
+    ----------
+    n : int
+        Input dimension when using convolution.
+    kernel: int
+        Kernel size in given dimension.
+    stride : int
+        Applied stride in given dimension.
 
-        Returns
-        -------
-        int
-            Dimension after convolution.
+    Returns
+    -------
+    int
+       Dimension after convolution.
 
-        """
+    """
     return np.ceil((n - kernel + 1) / stride)
 
 

@@ -1,7 +1,6 @@
 import tensorflow as tf
 import numpy as np
-import unittest
-from layers import layers
+from layers import primary_caps
 
 
 def createBatch(batch_size, h, w, ch):
@@ -14,7 +13,7 @@ class Conv2CapsTest(tf.test.TestCase):
     def infer(self, x, **kwargs):
         with self.test_session() as sess:
             x = tf.convert_to_tensor(x, dtype=float)
-            p_caps = layers.PrimaryCaps(**kwargs)
+            p_caps = primary_caps.PrimaryCaps(**kwargs)
             p_caps = p_caps(x)
             init_op = tf.global_variables_initializer()
             sess.run(init_op)

@@ -4,6 +4,15 @@ from layers import helpers
 
 
 class PrimaryCaps(keras.layers.Layer):
+    """
+    Layer with primary capsule functionality.
+
+    Applies 2D convolution followed by reshape and squash activation.
+    see `keras.layers.Conv2D`, `helpers.conv2caps` and `helpers.squash`
+
+    Input should be a tensor of shape `(batch, height, width, channels)`.
+    Outputs tensor of shape `(batch,num_of_capsules,conv_units)`
+    """
     def __init__(self,
                  conv_units,
                  channels,
@@ -11,6 +20,23 @@ class PrimaryCaps(keras.layers.Layer):
                  strides=(1, 1),
                  padding='valid',
                  **kwargs):
+        """
+        Parameters
+        ----------
+        conv_units: int
+            Dimension of capsule vector
+        channels: int
+            Number of channels in convolutional capsule layer.
+            Number of filters used in 2D convolution is `conv_units * channels`.
+        kernel_size: int or (int,int)
+            Same as in `keras.layers.Conv2D`
+        strides: int or (int,int)
+            Same as in `keras.layers.Conv2D`
+        padding: string
+            `valid` or `same` see `keras.layers.Conv2D`
+        kwargs:
+            passed to parent constructor
+        """
         super(PrimaryCaps, self).__init__(**kwargs)
         self.params = {
             'conv_units': conv_units,
