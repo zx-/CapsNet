@@ -61,8 +61,11 @@ class PrimaryCaps(keras.layers.Layer):
         super(PrimaryCaps, self).build(input_shape)
 
     def call(self, inputs):
+        # apply convolution to input volume
         x = self.conv2d(inputs)
+        # take (batch,h,w,ch) and reshape to (batch,num_of_capsules,conv_units)
         x = helpers.conv2caps(x, caps_dim=self.params['conv_units'])
+        # apply squash to conv_units as activation function
         x = helpers.squash(x)
         return x
 
