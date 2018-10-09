@@ -53,7 +53,7 @@ class Conv2CapsTest(tf.test.TestCase):
             self.assertAllCloseAccordingToType(s.eval(), self.x_out)
 
 
-class ConvDimValid(unittest.TestCase):
+class ConvDimValidTest(unittest.TestCase):
 
     def test_kernel(self):
         self.assertEqual(helpers.conv_dim_valid(28, 9, 1), 20)
@@ -62,12 +62,31 @@ class ConvDimValid(unittest.TestCase):
         self.assertEqual(helpers.conv_dim_valid(20, 9, 2), 6)
 
 
-class ConvDimSame(unittest.TestCase):
+class ConvDimSameTest(unittest.TestCase):
 
     def test_stride(self):
         self.assertEqual(helpers.conv_dim_same(28, 2), 14)
 
 
+class BroadcastTest(tf.test.TestCase):
+    def test_shape_simple(self):
+        with self.test_session():
+            s = helpers.broadcast(np.random.rand(10, 1, 15), np.random.rand(1, 15, 3))
+            a, b = s[0].eval(), s[1].eval()
+            self.assertAllCloseAccordingToType(a.shape, [10, 1, 15])
+            self.assertAllCloseAccordingToType(b.shape, [10, 15, 3])
+
+    def test_shape_2(self):
+        with self.test_session():
+            s = helpers.broadcast(
+                tf.convert_to_tensor(np.random.rand(10, 1, 15, 1, 15)),
+                tf.convert_to_tensor(np.random.rand(1, 10, 1, 15, 3)),
+                axis=[0, 1],
+                broadcast_b=False)
+            a, b = s[0].eval(), s[1].eval()
+            self.assertAllCloseAccordingToType(a.shape, [10, 10, 15, 1, 15])
+            self.assertAllCloseAccordingToType(b.shape, [1, 10, 1, 15, 3])
+
+
 if __name__ == '__main__':
     tf.test.main()
-

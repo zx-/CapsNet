@@ -111,3 +111,51 @@ def unpack_tuple_int(val):
     if isinstance(val, collections.Iterable):
         return val
     return val, val
+
+
+def broadcast(a, b, axis=0, broadcast_a=True, broadcast_b=True):
+    """
+    Determines new dimensions as `a_shape[axis] = (max(a.shape[axis],b.shape[axis])`.
+    Uses `tf.broadcast_to` method on `a` and `b` with new shape.
+    Tensors should be of same rank.
+
+    Parameters
+    ----------
+    a: tf.Tensor
+        tensor to broadcast
+    b: tf.Tensor
+        tensor to broadcast
+    axis: collections.Iterable or int
+        axes on which to broadcast
+    broadcast_a: bool
+        if false broadcasting is not performed on a
+    broadcast_b: bool
+        if false broadcasting is not performed on b
+
+    Returns
+    -------
+    (tf.Tensor,tf.Tensor)
+        a,b broadcasted
+
+    """
+    if not isinstance(axis, collections.Iterable):
+        axis = [axis]
+
+    a_shape = tf.unstack(tf.shape(a))
+    b_shape = tf.unstack(tf.shape(b))
+    new_dims = {}
+
+    for ax in axis:
+        new_dims[ax] = tf.maximum(a_shape[ax], b_shape[ax])
+
+    for ax, dim in new_dims.items():
+        a_shape[ax] = dim
+        b_shape[ax] = dim
+
+    if broadcast_a:
+        a = tf.broadcast_to(a, a_shape)
+
+    if broadcast_b:
+        b = tf.broadcast_to(b, b_shape)
+
+    return a, b

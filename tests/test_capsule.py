@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 
 import layers.capsule as caps
+from layers import helpers
 
 
 def createBatch(batch_size, capsules, caps_dim):
@@ -49,6 +50,44 @@ class PredictionVectorsTest(tf.test.TestCase):
 
         predicted_vectors = self.prediction_vectors(a, W)
         self.assertAllCloseAccordingToType(predicted_vectors, output)
+
+
+class RoutingTest(tf.test.TestCase):
+    def route(self, predictions, coupling_logits, routing_iterations):
+        with self.test_session():
+            return caps._routing(predictions, coupling_logits, routing_iterations).eval()
+
+    def test_output_shape(self):
+        pred = np.random.rand(5, 10, 15, 1, 8)
+        coupling_logits = np.ones((5, 10, 15, 1))
+        output = self.route(pred, coupling_logits, 3)
+
+        self.assertAllCloseAccordingToType(output.shape, [5, 10, 8])
+
+    def test_result_same(self):
+        pred = np.ones((5, 3, 10, 1, 10))
+        coupling_logits = np.ones((5, 3, 10, 1))
+
+        expected = helpers.squash(np.ones((5, 3, 10)))
+
+        output = self.route(pred, coupling_logits, 3)
+        self.assertAllCloseAccordingToType(output, expected)
+
+    def test_result_ones_value(self):
+        pred = np.ones((5, 3, 10, 1, 10))
+        coupling_logits = np.ones((5, 3, 10, 1))
+        output = self.route(pred, coupling_logits, 3)
+        self.assertAllInRange(output, 0.28747979 - 1e-06, 0.28747979 + 1e-06)
+
+    def test_result_vector(self):
+        pred = np.zeros((5, 3, 10, 1, 5))
+        pred[:, :, 0, 0, :] = [1., 2., 4., 2., 1.]
+        coupling_logits = np.ones((5, 3, 10, 1))
+        output = self.route(pred, coupling_logits, 3)
+        # [0.18885258, 0.37770516, 0.7554103 , 0.37770516, 0.18885258]
+        exp_vec = [0.18669177, 0.37338353, 0.74676707, 0.37338353, 0.18669177]
+        expected = np.tile(np.reshape(exp_vec, (1, 1, 5)), (5, 3, 1))
+        self.assertAllCloseAccordingToType(output, expected)
 
 
 if __name__ == '__main__':
