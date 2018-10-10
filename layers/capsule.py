@@ -21,7 +21,8 @@ def _coupling_logits(inputs, num_caps):
 
     """
     input_shape = tf.shape(inputs)
-    batch, num_input_caps = tf.gather(input_shape, [0, 1])
+    batch = tf.gather(input_shape, 0)
+    num_input_caps = tf.gather(input_shape, 1)
     return tf.ones([batch, num_caps, num_input_caps, 1])
 
 
@@ -124,7 +125,7 @@ def _routing(predictions, coupling_logits, routing_iterations):
     Returns
     -------
     tf.Tensor
-        Resulting capsule values.
+        Resulting capsule values. `(batch, num_caps[l], units[l])`
 
     """
     for i in range(routing_iterations):
@@ -146,13 +147,22 @@ def _routing(predictions, coupling_logits, routing_iterations):
 
 
 class Capsule(keras.layers.Layer):
+    """
+    Capsule layer.
+
+    Computes predictions from input using trainable weights.
+    Uses these predictions in routing to compute output capsules.
+
+    Takes tensor of shape `(batch, input_caps, input_caps_dims)` as input.
+    Outputs tensor of shape `(batch, capsules, capsule_units)`
+    """
+
     def __init__(self,
-                 capsule_units,
                  capsules,
+                 capsule_units,
                  routing_iterations=3,
                  **kwargs):
         """
-
         Parameters
         ----------
         capsule_units: int
@@ -166,8 +176,8 @@ class Capsule(keras.layers.Layer):
         """
         super(Capsule, self).__init__(**kwargs)
         self.params = {
-            'capsule_units': capsule_units,
             'capsules': capsules,
+            'capsule_units': capsule_units,
             'routing_iterations': routing_iterations,
         }
 
@@ -190,7 +200,9 @@ class Capsule(keras.layers.Layer):
         super(Capsule, self).build(input_shape)
 
     def call(self, inputs):
-        pass
+        coupling_logits_b = _coupling_logits(inputs, self.params['capsules'])
+        predictions = _prediction_vectors(inputs, self.W)
+        return _routing(predictions, coupling_logits_b, self.params['routing_iterations'])
 
     def compute_output_shape(self, input_shape):
         batch_size, _, _ = tf.TensorShape(input_shape).as_list()
