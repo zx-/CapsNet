@@ -1,6 +1,7 @@
 import tensorflow as tf
 import collections
 import numpy as np
+import tensorflow.contrib.slim as slim
 
 
 def squash(x, axis=-1):
@@ -174,3 +175,8 @@ def variable_summaries(var, scope_name='summaries'):
         tf.summary.scalar('max', tf.reduce_max(var))
         tf.summary.scalar('min', tf.reduce_min(var))
         tf.summary.histogram('histogram', var)
+
+
+def print_model_summary():
+    model_vars = tf.trainable_variables()
+    slim.model_analyzer.analyze_vars(model_vars, print_info=True)
