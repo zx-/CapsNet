@@ -165,7 +165,7 @@ def broadcast(a, b, axis=0, broadcast_a=True, broadcast_b=True):
 
 def variable_summaries(var, scope_name='summaries'):
     """Attach a lot of summaries to a Tensor (for TensorBoard visualization)."""
-    with tf.name_scope('summaries'):
+    with tf.name_scope(scope_name):
         mean = tf.reduce_mean(var)
         tf.summary.scalar('mean', mean)
         with tf.name_scope('stddev'):
