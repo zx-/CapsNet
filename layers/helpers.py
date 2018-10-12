@@ -22,10 +22,11 @@ def squash(x, axis=-1):
     tf.Tensor
         Squashed tensor.
     """
-    norm = tf.norm(x, axis=axis, keepdims=True)
-    norm2 = norm ** 2
-    output = norm2 / (norm2 + 1) * (x / norm)
-    return output
+    with tf.name_scope("squash"):
+        norm = tf.norm(x, axis=axis, keepdims=True)
+        norm2 = norm ** 2
+        output = norm2 / (norm2 + 1) * (x / norm)
+        return output
 
 
 def conv2caps(x, caps_dim):
@@ -141,21 +142,35 @@ def broadcast(a, b, axis=0, broadcast_a=True, broadcast_b=True):
     if not isinstance(axis, collections.Iterable):
         axis = [axis]
 
-    a_shape = tf.unstack(tf.shape(a))
-    b_shape = tf.unstack(tf.shape(b))
-    new_dims = {}
+    with tf.name_scope("two_tensor_broadcast"):
+        a_shape = tf.unstack(tf.shape(a))
+        b_shape = tf.unstack(tf.shape(b))
+        new_dims = {}
 
-    for ax in axis:
-        new_dims[ax] = tf.maximum(a_shape[ax], b_shape[ax])
+        for ax in axis:
+            new_dims[ax] = tf.maximum(a_shape[ax], b_shape[ax])
 
-    for ax, dim in new_dims.items():
-        a_shape[ax] = dim
-        b_shape[ax] = dim
+        for ax, dim in new_dims.items():
+            a_shape[ax] = dim
+            b_shape[ax] = dim
 
-    if broadcast_a:
-        a = tf.broadcast_to(a, a_shape)
+        if broadcast_a:
+            a = tf.broadcast_to(a, a_shape)
 
-    if broadcast_b:
-        b = tf.broadcast_to(b, b_shape)
+        if broadcast_b:
+            b = tf.broadcast_to(b, b_shape)
 
-    return a, b
+        return a, b
+
+
+def variable_summaries(var, scope_name='summaries'):
+    """Attach a lot of summaries to a Tensor (for TensorBoard visualization)."""
+    with tf.name_scope('summaries'):
+        mean = tf.reduce_mean(var)
+        tf.summary.scalar('mean', mean)
+        with tf.name_scope('stddev'):
+            stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
+        tf.summary.scalar('stddev', stddev)
+        tf.summary.scalar('max', tf.reduce_max(var))
+        tf.summary.scalar('min', tf.reduce_min(var))
+        tf.summary.histogram('histogram', var)

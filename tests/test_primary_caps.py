@@ -49,3 +49,7 @@ class Conv2CapsTest(tf.test.TestCase):
                 strides=2
             ).shape,
             [10, 1152, 8])
+
+
+if __name__ == '__main__':
+    tf.test.main()

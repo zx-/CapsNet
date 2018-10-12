@@ -20,10 +20,11 @@ def _coupling_logits(inputs, num_caps):
     tf.Tensor
 
     """
-    input_shape = tf.shape(inputs)
-    batch = tf.gather(input_shape, 0)
-    num_input_caps = tf.gather(input_shape, 1)
-    return tf.ones([batch, num_caps, num_input_caps, 1])
+    with tf.name_scope("coupling_logits"):
+        input_shape = tf.shape(inputs)
+        batch = tf.gather(input_shape, 0)
+        num_input_caps = tf.gather(input_shape, 1)
+        return tf.ones([batch, num_caps, num_input_caps, 1])
 
 
 def _coupling_coefficients(coupling_logits):
@@ -42,7 +43,8 @@ def _coupling_coefficients(coupling_logits):
         tensor of same shape as input
 
     """
-    return tf.nn.softmax(coupling_logits, axis=-2)
+    with tf.name_scope("coupling_coefficients"):
+        return tf.nn.softmax(coupling_logits, axis=-2)
 
 
 # def _matmul_over_caps(example, weights):
@@ -93,20 +95,21 @@ def _prediction_vectors(inputs, weights):
         Predictions u_hat.
 
     """
-    # take inputs (batch,num_caps[l-1],units[l-1])
-    # transform into (batch, 1, num_caps[l-1], 1, units[l-1])
-    inputs = tf.expand_dims(inputs, -2)  # add dim before units
-    inputs = tf.expand_dims(inputs, 1)  # add dim after batch
+    with tf.name_scope("prediction_vectors"):
+        # take inputs (batch,num_caps[l-1],units[l-1])
+        # transform into (batch, 1, num_caps[l-1], 1, units[l-1])
+        inputs = tf.expand_dims(inputs, -2)  # add dim before units
+        inputs = tf.expand_dims(inputs, 1)  # add dim after batch
 
-    # take weights (num_caps[l], num_caps[l-1], units[l-1], units[l])
-    # transform into (1, num_caps[l], num_caps[l-1], units[l-1], units[l])
-    weights = tf.expand_dims(weights, 0)
+        # take weights (num_caps[l], num_caps[l-1], units[l-1], units[l])
+        # transform into (1, num_caps[l], num_caps[l-1], units[l-1], units[l])
+        weights = tf.expand_dims(weights, 0)
 
-    # inputs (batch, num_caps[l], num_caps[l-1], 1, units[l-1])
-    # weights (batch, num_caps[l], num_caps[l-1], units[l-1], units[l])
-    inputs, weights = helpers.broadcast(inputs, weights, axis=[0, 1])
+        # inputs (batch, num_caps[l], num_caps[l-1], 1, units[l-1])
+        # weights (batch, num_caps[l], num_caps[l-1], units[l-1], units[l])
+        inputs, weights = helpers.broadcast(inputs, weights, axis=[0, 1])
 
-    return tf.matmul(inputs, weights)
+        return tf.matmul(inputs, weights)
 
 
 def _routing(predictions, coupling_logits, routing_iterations):
@@ -128,22 +131,24 @@ def _routing(predictions, coupling_logits, routing_iterations):
         Resulting capsule values. `(batch, num_caps[l], units[l])`
 
     """
-    for i in range(routing_iterations):
-        coupling_coeffs = _coupling_coefficients(coupling_logits)
-        out = tf.reduce_sum(tf.multiply(predictions, tf.expand_dims(coupling_coeffs, -1)), axis=-3)
-        out = helpers.squash(out)  # (batch, num_caps[l], 1, units[l])
-        if i < routing_iterations - 1:
-            # expand to (batch, num_caps[l], 1, units[l], 1)
-            out = tf.expand_dims(out, -1)
-            # broadcast to (batch, num_caps[l], num_caps[l-1], units[l], 1)
-            out, _ = helpers.broadcast(out, predictions, axis=-3, broadcast_b=False)
-            # get logit update (batch, num_caps[l], num_caps[l-1], 1, 1)
-            logits_update = tf.matmul(predictions, out)
-            logits_update = tf.squeeze(logits_update, [-1])  # (batch, num_caps[l], num_caps[l-1], 1)
-            # update coupling_logits
-            coupling_logits = tf.add(coupling_logits, logits_update)
 
-    return tf.squeeze(out)  # squeeze to get (batch, num_caps[l], units[l])
+    with tf.name_scope("routing"):
+        for i in range(routing_iterations):
+            coupling_coeffs = _coupling_coefficients(coupling_logits)
+            out = tf.reduce_sum(tf.multiply(predictions, tf.expand_dims(coupling_coeffs, -1)), axis=-3)
+            out = helpers.squash(out)  # (batch, num_caps[l], 1, units[l])
+            if i < routing_iterations - 1:
+                # expand to (batch, num_caps[l], 1, units[l], 1)
+                out = tf.expand_dims(out, -1)
+                # broadcast to (batch, num_caps[l], num_caps[l-1], units[l], 1)
+                out, _ = helpers.broadcast(out, predictions, axis=-3, broadcast_b=False)
+                # get logit update (batch, num_caps[l], num_caps[l-1], 1, 1)
+                logits_update = tf.matmul(predictions, out)
+                logits_update = tf.squeeze(logits_update, [-1])  # (batch, num_caps[l], num_caps[l-1], 1)
+                # update coupling_logits
+                coupling_logits = tf.add(coupling_logits, logits_update)
+
+        return tf.squeeze(out)  # squeeze to get (batch, num_caps[l], units[l])
 
 
 class Capsule(keras.layers.Layer):
@@ -161,6 +166,7 @@ class Capsule(keras.layers.Layer):
                  capsules,
                  capsule_units,
                  routing_iterations=3,
+                 create_weight_summary=False,
                  **kwargs):
         """
         Parameters
@@ -179,6 +185,7 @@ class Capsule(keras.layers.Layer):
             'capsules': capsules,
             'capsule_units': capsule_units,
             'routing_iterations': routing_iterations,
+            'create_weight_summary': create_weight_summary,
         }
 
     def build(self, input_shape):
@@ -196,6 +203,9 @@ class Capsule(keras.layers.Layer):
                                  shape=shape,
                                  initializer='uniform',
                                  trainable=True)
+        if self.params['create_weight_summary']:
+            helpers.variable_summaries(self.W, 'W')
+
         # if batch_size was fixed, we could create coupling_logits_b as tf.zeros too
         super(Capsule, self).build(input_shape)
 

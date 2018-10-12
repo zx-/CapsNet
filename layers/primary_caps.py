@@ -13,6 +13,7 @@ class PrimaryCaps(keras.layers.Layer):
     Input should be a tensor of shape `(batch, height, width, channels)`.
     Outputs tensor of shape `(batch,num_of_capsules,conv_units)`
     """
+
     def __init__(self,
                  conv_units,
                  channels,
@@ -57,14 +58,17 @@ class PrimaryCaps(keras.layers.Layer):
             padding=self.params['padding'],
             name="conv2d"
         )
+        self.conv2d.build(input_shape)
 
+        self.output_caps_shape = self.compute_output_shape(input_shape)
         super(PrimaryCaps, self).build(input_shape)
 
     def call(self, inputs):
         # apply convolution to input volume
         x = self.conv2d(inputs)
         # take (batch,h,w,ch) and reshape to (batch,num_of_capsules,conv_units)
-        x = helpers.conv2caps(x, caps_dim=self.params['conv_units'])
+        # x = helpers.conv2caps(x, caps_dim=self.params['conv_units'])
+        x = tf.reshape(x, self.output_caps_shape)
         # apply squash to conv_units as activation function
         x = helpers.squash(x)
         return x
@@ -78,14 +82,14 @@ class PrimaryCaps(keras.layers.Layer):
             rows = helpers.conv_dim_same(rows, stride_row)
             cols = helpers.conv_dim_same(cols, stride_col)
 
-        elif self.params['padding'].casefold() == 'valid'.casefold:
-            kernel_row, kernel_col = self.__unpack_tuple_int(self.params['kernel_size'])
+        elif self.params['padding'].casefold() == 'valid'.casefold():
+            kernel_row, kernel_col = helpers.unpack_tuple_int(self.params['kernel_size'])
             rows = helpers.conv_dim_valid(rows, kernel_row, stride_row)
             cols = helpers.conv_dim_valid(cols, kernel_col, stride_col)
 
         else:
             raise ValueError(self.params['padding'] + ' is not valid padding')
 
-        return tf.TensorShape([batch_size,
-                               rows * cols * self.params['channels'],
-                               self.params['conv_units']])
+        return (-1,
+                tf.to_int32(rows * cols * self.params['channels']),
+                self.params['conv_units'])
