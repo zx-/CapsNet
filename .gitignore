@@ -1,3 +1,6 @@
 .idea
 venv
 layers/__pycache__/
+loss/__pycache__/
+data/mnist
+tmp/
