@@ -3,6 +3,8 @@ import collections
 import numpy as np
 import tensorflow.contrib.slim as slim
 
+from distutils.version import LooseVersion
+
 
 def squash(x, axis=-1):
     """
@@ -115,7 +117,7 @@ def unpack_tuple_int(val):
     return val, val
 
 
-def broadcast(a, b, axis=0, broadcast_a=True, broadcast_b=True):
+def broadcast(a, b, axis=0, broadcast_a=True, broadcast_b=True, use_legacy=None):
     """
     Determines new dimensions as `a_shape[axis] = (max(a.shape[axis],b.shape[axis])`.
     Uses `tf.broadcast_to` method on `a` and `b` with new shape.
@@ -133,6 +135,9 @@ def broadcast(a, b, axis=0, broadcast_a=True, broadcast_b=True):
         if false broadcasting is not performed on a
     broadcast_b: bool
         if false broadcasting is not performed on b
+    use_legacy: bool
+        Use tf.broadcast_to instead of tf.tile
+        defaults to tf.__version__ < 1.12.0
 
     Returns
     -------
@@ -143,25 +148,55 @@ def broadcast(a, b, axis=0, broadcast_a=True, broadcast_b=True):
     if not isinstance(axis, collections.Iterable):
         axis = [axis]
 
-    with tf.name_scope("two_tensor_broadcast"):
-        a_shape = tf.unstack(tf.shape(a))
-        b_shape = tf.unstack(tf.shape(b))
-        new_dims = {}
+    if use_legacy is None:
+        use_legacy = LooseVersion(tf.__version__) < LooseVersion('1.12.0')
 
-        for ax in axis:
-            new_dims[ax] = tf.maximum(a_shape[ax], b_shape[ax])
+    if not use_legacy:
+        with tf.name_scope("two_tensor_broadcast"):
+            a_shape = tf.unstack(tf.shape(a))
+            b_shape = tf.unstack(tf.shape(b))
+            new_dims = {}
 
-        for ax, dim in new_dims.items():
-            a_shape[ax] = dim
-            b_shape[ax] = dim
+            for ax in axis:
+                new_dims[ax] = tf.maximum(a_shape[ax], b_shape[ax])
 
-        if broadcast_a:
-            a = tf.broadcast_to(a, a_shape)
+            for ax, dim in new_dims.items():
+                a_shape[ax] = dim
+                b_shape[ax] = dim
 
-        if broadcast_b:
-            b = tf.broadcast_to(b, b_shape)
+            if broadcast_a:
+                a = tf.broadcast_to(a, a_shape)
 
-        return a, b
+            if broadcast_b:
+                b = tf.broadcast_to(b, b_shape)
+
+            return a, b
+
+    else:
+        with tf.name_scope("two_tensor_broadcast_legacy"):
+            a_shape = tf.unstack(tf.shape(a))
+            b_shape = tf.unstack(tf.shape(b))
+
+            axis = list(map(lambda x: x % len(a_shape), axis))
+            for i, (a_dim, b_dim) in enumerate(zip(a_shape, b_shape)):
+                if i in axis:
+                    new_dim = tf.maximum(a_dim, b_dim)
+                    new_dim_a = tf.to_int32(new_dim / a_dim)
+                    new_dim_b = tf.to_int32(new_dim / b_dim)
+                else:
+                    new_dim_a = 1
+                    new_dim_b = 1
+
+                a_shape[i] = new_dim_a
+                b_shape[i] = new_dim_b
+
+            if broadcast_a:
+                a = tf.tile(a, a_shape)
+
+            if broadcast_b:
+                b = tf.tile(b, b_shape)
+
+            return a, b
 
 
 def variable_summaries(var, scope_name='summaries'):

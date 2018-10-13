@@ -87,6 +87,25 @@ class BroadcastTest(tf.test.TestCase):
             self.assertAllCloseAccordingToType(a.shape, [10, 10, 15, 1, 15])
             self.assertAllCloseAccordingToType(b.shape, [1, 10, 1, 15, 3])
 
+    def test_shape_legacy(self):
+        with self.test_session():
+            s = helpers.broadcast(np.random.rand(10, 1, 15), np.random.rand(1, 15, 3), use_legacy=True)
+            a, b = s[0].eval(), s[1].eval()
+            self.assertAllCloseAccordingToType(a.shape, [10, 1, 15])
+            self.assertAllCloseAccordingToType(b.shape, [10, 15, 3])
+
+    def test_shape_2_legacy(self):
+        with self.test_session():
+            s = helpers.broadcast(
+                tf.convert_to_tensor(np.random.rand(10, 1, 15, 1, 15)),
+                tf.convert_to_tensor(np.random.rand(1, 10, 1, 15, 3)),
+                axis=[0, 1],
+                broadcast_b=False,
+                use_legacy=True)
+            a, b = s[0].eval(), s[1].eval()
+            self.assertAllCloseAccordingToType(a.shape, [10, 10, 15, 1, 15])
+            self.assertAllCloseAccordingToType(b.shape, [1, 10, 1, 15, 3])
+
 
 if __name__ == '__main__':
     tf.test.main()
