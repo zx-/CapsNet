@@ -9,7 +9,7 @@ import tensorflow.contrib.slim as slim
 
 IMG_SIZE = 28
 NUM_CLASSES = 10
-EXAMPLE_NUM = 256
+EXAMPLE_NUM = 64
 
 
 def simple_caps_net(inputs):
@@ -42,7 +42,7 @@ def prepare_data():
 
 if __name__ == '__main__':
 
-    run_num = 1
+    run_num = 2
 
     (x_train, y_train), (x_test, y_test) = prepare_data()
     p_x, p_target = create_input_placeholders()
