@@ -61,6 +61,28 @@ def total_loss(prediction,
                m_positive=.9,
                m_negative=0.1,
                lambd=.5):
+    """
+
+    Combination of margin_loss and reconstruction_loss
+
+    Parameters
+    ----------
+    prediction: tf.Tensor
+        Predictions of shape `(batch,num_caps,caps_dim)`
+    target_class: tf.Tensor
+        Targets of shape `(batch, num_caps)`
+    reconstruction: tf.Tensor
+    target_image: tf.Tensor
+    reconstruction_weight: float
+    m_positive: float
+    m_negative: float
+    lambd: float
+
+    Returns
+    -------
+    tf.Tensor
+
+    """
     ml = margin_loss(prediction, target_class, m_positive, m_negative, lambd)
     rl = reconstruction_loss(reconstruction, target_image)
     return ml + reconstruction_weight * rl

@@ -4,3 +4,4 @@ layers/__pycache__/
 loss/__pycache__/
 data/mnist
 tmp/
+data/__pycache__/

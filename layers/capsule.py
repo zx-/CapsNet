@@ -148,7 +148,7 @@ def _routing(predictions, coupling_logits, routing_iterations):
                 # update coupling_logits
                 coupling_logits = tf.add(coupling_logits, logits_update)
 
-        return tf.squeeze(out)  # squeeze to get (batch, num_caps[l], units[l])
+        return tf.squeeze(out, axis=-2)  # squeeze to get (batch, num_caps[l], units[l])
 
 
 class Capsule(keras.layers.Layer):
