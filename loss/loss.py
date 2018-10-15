@@ -1,6 +1,15 @@
 import tensorflow as tf
 
 
+def accuracy(prediction, target_class):
+    with tf.name_scope("accuracy"):
+        lengths = tf.norm(prediction, axis=-1)  # (batch, num_caps)
+        y_pred = tf.argmax(lengths, axis=-1)
+        y_true = tf.argmax(target_class, axis=-1)
+
+        return tf.reduce_mean(tf.cast(tf.equal(y_pred, y_true), tf.float32))
+
+
 def margin_loss(prediction, target, m_positive=.9, m_negative=0.1, lambd=.5):
     """
     Computes margin loss.
@@ -32,7 +41,7 @@ def margin_loss(prediction, target, m_positive=.9, m_negative=0.1, lambd=.5):
         negative = (1 - target) * lambd * tf.maximum(0.0, lengths - m_negative) ** 2
         loss = positive + negative
 
-    return tf.reduce_sum(loss)
+        return tf.reduce_sum(loss)
 
 
 def reconstruction_loss(prediction, target):
@@ -49,8 +58,8 @@ def reconstruction_loss(prediction, target):
     -------
     tf.Tensor
     """
-
-    return tf.reduce_sum((prediction - target) ** 2)
+    with tf.name_scope("reconstruction_loss"):
+        return tf.reduce_sum((prediction - target) ** 2)
 
 
 def total_loss(prediction,
@@ -83,6 +92,7 @@ def total_loss(prediction,
     tf.Tensor
 
     """
-    ml = margin_loss(prediction, target_class, m_positive, m_negative, lambd)
-    rl = reconstruction_loss(reconstruction, target_image)
-    return ml + reconstruction_weight * rl
+    with tf.name_scope("total_loss"):
+        ml = margin_loss(prediction, target_class, m_positive, m_negative, lambd)
+        rl = reconstruction_loss(reconstruction, target_image)
+        return ml + reconstruction_weight * rl, ml, rl
