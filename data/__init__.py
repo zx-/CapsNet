@@ -1,1 +1,2 @@
 from data.mnist_dataset import create_datasets
+from data.mnist_dataset import data_input_fn
