@@ -6,10 +6,15 @@ import numpy as np
 import tensorflow.contrib.slim as slim
 import layers.helpers as helpers
 import os
+import argparse
 
 
 def reconstruction_graph(capsules, y_onehot):
     """
+    Builds image reconstruction graph used as regularization.
+    Takes capsules and one hot vector of number classes as input.
+
+    Outputs reconstructed images. Currently image size is fixed.
 
     Parameters
     ----------
@@ -20,7 +25,8 @@ def reconstruction_graph(capsules, y_onehot):
 
     Returns
     -------
-
+    tf.Tensor
+        Reconstructed images `(batch, 28, 28, 1)`
     """
 
     with tf.name_scope('reconstruction'):
@@ -50,11 +56,26 @@ def build_graph(inputs, y_onehot):
 
 
 if __name__ == '__main__':
-    RUN = 'train_sigm_adam'
-    NUM_EPOCHS = 5
-    NUM_TRAIN = 10000
-    NUM_TEST = 1000
-    BATCH_SIZE = 64
+    parser = argparse.ArgumentParser(description="""Capsnet over MNIST dataset.
+    Stores tensorboard data in tmp/log/<name>
+    """)
+    parser.add_argument('-e', '--epochs', action="store", dest="epochs", type=int, default=5,
+                        help="Number of epochs to run.")
+    parser.add_argument('-tr', '--train', action="store", dest="train", type=int, default=10000,
+                        help="Number of train examples.")
+    parser.add_argument('-te', '--test', action="store", dest="test", type=int, default=1000,
+                        help="Number of test examples.")
+    parser.add_argument('-b', '--batch', action="store", dest="batch", type=int, default=64, help="Batch size.")
+    parser.add_argument('-n', '--name', action="store", dest="name", type=str, default='train_1',
+                        help="Run name to use in tensorboard.")
+
+    arguments = parser.parse_args()
+
+    RUN = arguments.name
+    NUM_EPOCHS = arguments.epochs
+    NUM_TRAIN = arguments.train
+    NUM_TEST = arguments.test
+    BATCH_SIZE = arguments.batch
     NUM_ITERATIONS = int(np.ceil(NUM_TRAIN / BATCH_SIZE))
     EVAL_ITERATIONS = int(np.ceil(NUM_TEST / BATCH_SIZE))
 
@@ -120,7 +141,7 @@ if __name__ == '__main__':
 
             summary = tf.Summary()
             summary.value.add(tag="eval/acc", simple_value=np.mean(eval_acc))
-            writer.add_summary(summary, (epoch+1) * NUM_ITERATIONS)
+            writer.add_summary(summary, (epoch + 1) * NUM_ITERATIONS)
 
             summary = tf.Summary()
             summary.value.add(tag="eval/loss", simple_value=np.mean(eval_loss))

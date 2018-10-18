@@ -14,13 +14,11 @@ EXAMPLE_NUM = 64
 
 def simple_caps_net(inputs):
     x = tf.expand_dims(inputs, -1)
-    pcaps = tf.keras.layers.Conv2D(filters=256,
-                                   kernel_size=9,
-                                   padding='valid',
-                                   data_format='channels_last',
-                                   activation='relu')
-    x = pcaps(x)
-
+    x = tf.keras.layers.Conv2D(filters=256,
+                               kernel_size=9,
+                               padding='valid',
+                               data_format='channels_last',
+                               activation='relu')(x)
     x = caps_layers.PrimaryCaps(conv_units=8, channels=32, kernel_size=9, strides=2)(x)
     x = caps_layers.Capsule(capsules=10, capsule_units=16)(x)
     return x

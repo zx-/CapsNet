@@ -5,3 +5,4 @@ loss/__pycache__/
 data/mnist
 tmp/
 data/__pycache__/
+__pycache__/

@@ -59,8 +59,10 @@ def create_datasets(path=f'{os.getcwd()}/data/mnist', make_dict=False):
     return train, test
 
 
-def data_input_fn(dataset, batch_size=32, num_items=None):
+def data_input_fn(dataset, batch_size=32, num_items=None, shuffle=False):
     """
+    Returns data input function suitable for estimators.
+    Data is served in batches from one_shot_iterator.
 
     Parameters
     ----------
@@ -70,7 +72,8 @@ def data_input_fn(dataset, batch_size=32, num_items=None):
 
     Returns
     -------
-
+    function
+        input_fn
     """
 
     def input_fn():
@@ -78,6 +81,9 @@ def data_input_fn(dataset, batch_size=32, num_items=None):
 
         if num_items is not None:
             data = data.take(num_items)
+
+        if shuffle:
+            data = data.shuffle(10000)
 
         data = data.batch(batch_size)
         data = data.prefetch(batch_size)
