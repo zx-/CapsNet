@@ -32,6 +32,6 @@ batch 64 and 5 epochs.
 
 ## Tests
 
-To run [tests](blob/master/tests) use:
+To run [tests](tests/) use:
 
 `python -m unittest discover tests`
