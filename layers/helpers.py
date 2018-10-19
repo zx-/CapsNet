@@ -136,7 +136,7 @@ def broadcast(a, b, axis=0, broadcast_a=True, broadcast_b=True, use_legacy=None)
     broadcast_b: bool
         if false broadcasting is not performed on b
     use_legacy: bool
-        Use tf.broadcast_to instead of tf.tile
+        Use `tf.tile` instead of `tf.broadcast_to`
         defaults to tf.__version__ < 1.12.0
 
     Returns

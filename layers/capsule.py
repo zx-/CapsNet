@@ -46,7 +46,7 @@ def _coupling_coefficients(coupling_logits):
     with tf.name_scope("coupling_coefficients"):
         return tf.nn.softmax(coupling_logits, axis=-2)
 
-
+# This fn wasnt needed as we use custom broadcasting
 # def _matmul_over_caps(example, weights):
 #     """
 #     Takes one example of shape `(num_caps[l-1], 1, units[l-1])` and
@@ -177,6 +177,8 @@ class Capsule(keras.layers.Layer):
             Number of capsules in layer
         routing_iterations: int
             Number of iterations done while routing.
+        create_weight_summary: bool
+            Attach summaries to weight tensor (for tensorboard).
         kwargs:
             passed to parent constructor
         """

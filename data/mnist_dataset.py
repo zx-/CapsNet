@@ -67,8 +67,13 @@ def data_input_fn(dataset, batch_size=32, num_items=None, shuffle=False):
     Parameters
     ----------
     dataset: tf.data.Dataset
+        Dataset to use.
     batch_size: int
+        Batch size.
     num_items: int
+        Takes first `num_items` items from dataset.
+    shuffle: bool
+        Whether to shuffle data before batching.
 
     Returns
     -------

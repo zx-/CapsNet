@@ -8,7 +8,7 @@ class PrimaryCaps(keras.layers.Layer):
     Layer with primary capsule functionality.
 
     Applies 2D convolution followed by reshape and squash activation.
-    see `keras.layers.Conv2D`, `helpers.conv2caps` and `helpers.squash`
+    see `keras.layers.Conv2D` and `helpers.squash`
 
     Input should be a tensor of shape `(batch, height, width, channels)`.
     Outputs tensor of shape `(batch,num_of_capsules,conv_units)`

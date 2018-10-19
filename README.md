@@ -28,3 +28,10 @@ Run `capsnet_estimator.py -h` to see all parameters.
 
 Estimator implementation of capsnet. Runs over whole dataset and with default parameters uses
 batch 64 and 5 epochs.
+
+
+## Tests
+
+To run [tests](blob/master/tests) use:
+
+`python -m unittest discover tests`
