@@ -3,6 +3,12 @@
 Implementation of convolutional capsules network described in [paper](https://arxiv.org/pdf/1710.09829.pdf) by 
 Sara Sabour, Nicholas Frosst & Geoffrey E Hinton.
 
+## Model
+
+Check [layers](https://github.com/zx-/CapsNet/blob/master/layers/) for more detailed model description.
+![CapsNet](images/graph.PNG)
+
+
 ## Training
 
 Network is trained using MNIST dataset which will be downloaded automatically to `data/mnist`.
