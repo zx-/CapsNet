@@ -1,8 +1,8 @@
 ### Primary capsule
-![CapsNet](images/primary_caps.PNG)
+![Primary Caps](https://github.com/zx-/CapsNet/blob/master/images/primary_caps.PNG)
 
 ### Capsules
-![CapsNet](images/capsule.PNG)
+![Capsule](https://github.com/zx-/CapsNet/blob/master/images/capsule.PNG)
 
 ### Reconstruction
-![CapsNet](images/reconstruction.PNG)
+![Reconstruction](https://github.com/zx-/CapsNet/blob/master/images/reconstruction.PNG)
