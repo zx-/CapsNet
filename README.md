@@ -1,7 +1,8 @@
 # CapsNet
 
 Implementation of convolutional capsules network described in [paper](https://arxiv.org/pdf/1710.09829.pdf) by 
-Sara Sabour, Nicholas Frosst & Geoffrey E Hinton.
+Sara Sabour, Nicholas Frosst & Geoffrey E Hinton. Contains runnable files that build and train network on MNIST dataset.
+Most of the code is documented so feel free to check files for docstrings.
 
 ## Model
 
@@ -26,7 +27,7 @@ Runs 20 iterations over 64 examples and minimizes [margin_loss](https://github.c
 Run `capsnet.py -h` to see all parameters.
 
 With default params runs capsnet with reconstruction for 5 epochs over 10000 train (1000 test) 
-examples with batch 64. Uses [dataset](blob/master/data/mnist_dataset.py#L23) and iterators.
+examples with batch 64. Uses [dataset](data/mnist_dataset.py#L23) and iterators.
 
 #### [capsnet_estimator.py](capsnet_estimator.py)
 
